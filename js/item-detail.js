@@ -257,7 +257,9 @@ function buildSkillsSection(skills) {
 
     const prob = document.createElement('span');
     prob.textContent = skill['최소확률%'] !== undefined
-      ? `확률 ${skill['최소확률%']}%~${skill['최대확률%']}%`
+      ? (skill['최소확률%'] === skill['최대확률%']
+        ? `확률 ${skill['최소확률%']}%`
+        : `확률 ${skill['최소확률%']}%~${skill['최대확률%']}%`)
       : '';
 
     const trigger = document.createElement('span');
