@@ -5,7 +5,7 @@ let db = null;
 
 /** Load JSON and build indices */
 export async function loadData() {
-  const resp = await fetch('json/Oniro_ItemDB_1.4.4.json');
+  const resp = await fetch('json/Oniro_ItemDB_1.4.4_v2.json');
   const raw = await resp.json();
 
   const items = raw['아이템 옵션+스킬 DB'] || [];

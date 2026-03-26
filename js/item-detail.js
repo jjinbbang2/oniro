@@ -197,7 +197,7 @@ function buildOptionsSection(options) {
   table.className = 'option-table';
 
   const thead = document.createElement('thead');
-  thead.innerHTML = `<tr><th>옵션</th><th>값</th><th>범위</th><th>유형</th></tr>`;
+  thead.innerHTML = `<tr><th>옵션</th><th>값</th><th>유형</th></tr>`;
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
@@ -210,14 +210,10 @@ function buildOptionsSection(options) {
 
     const tdValue = document.createElement('td');
     tdValue.className = 'option-value';
-    tdValue.textContent = formatOptionValue(opt);
-
-    const tdRange = document.createElement('td');
-    tdRange.className = 'option-range';
     if (opt.최소값 !== opt.최대값) {
-      tdRange.textContent = `${opt.최소값} ~ ${opt.최대값}`;
+      tdValue.textContent = `${opt.최소값} ~ ${opt.최대값}`;
     } else {
-      tdRange.textContent = '-';
+      tdValue.textContent = formatOptionValue(opt);
     }
 
     const tdType = document.createElement('td');
@@ -226,7 +222,7 @@ function buildOptionsSection(options) {
     typeBadge.textContent = opt.유형;
     tdType.appendChild(typeBadge);
 
-    tr.append(tdName, tdValue, tdRange, tdType);
+    tr.append(tdName, tdValue, tdType);
     tbody.appendChild(tr);
   }
 
@@ -245,7 +241,7 @@ function buildSkillsSection(skills) {
 
     const name = document.createElement('div');
     name.className = 'skill-name';
-    name.textContent = skill.이름;
+    name.textContent = skill['이름(한국어)'] || skill.이름;
 
     const meta = document.createElement('div');
     meta.className = 'skill-meta';
