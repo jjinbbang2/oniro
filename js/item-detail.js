@@ -1,7 +1,7 @@
-import { getWeaponStats, getArmorStats } from './data.js?v=1.4.12';
-import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.12';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.12';
-import { renderStars } from './render.js?v=1.4.12';
+import { getWeaponStats, getArmorStats } from './data.js?v=1.4.13';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.13';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.13';
+import { renderStars } from './render.js?v=1.4.13';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
@@ -141,7 +141,7 @@ function buildWeaponStats(ws) {
     ['기본 피해', ws.기본피해, null],
     ['공격 속도', ws.공격속도, null],
     ['피해 범위', `${ws.최소피해} ~ ${ws.최대피해}`, `변동 ${ws.피해변동}`],
-    ['속성', (ws.속성 || '물리').replace('바람', '공기'), null],
+    ['속성', (ws.속성 || '물리').replace('바람', '공기').replace('신성', '빛'), null],
   ];
 
   for (const [label, value, sub] of cards) {
