@@ -100,6 +100,15 @@ export async function fetchItemRatings(itemId) {
   }
 }
 
+/** SHA-256 해시 생성 */
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 /** 스로틀: 1분에 최대 10건 */
 const THROTTLE_WINDOW = 60 * 1000; // 1분
 const THROTTLE_MAX = 10;
@@ -125,9 +134,11 @@ function checkThrottle() {
 }
 
 /** 평가 등록 */
-export async function submitRating(itemId, nickname, rating, comment = '') {
+export async function submitRating(itemId, nickname, rating, comment = '', password = '') {
   if (!supabase) throw new Error('Supabase not initialized');
   checkThrottle();
+
+  const pwHash = password ? await hashPassword(password) : '';
 
   const { data, error } = await supabase
     .from('item_ratings')
@@ -136,6 +147,7 @@ export async function submitRating(itemId, nickname, rating, comment = '') {
       nickname: nickname.trim(),
       rating,
       comment: comment.trim(),
+      password_hash: pwHash,
     }])
     .select();
 
@@ -151,4 +163,70 @@ export async function submitRating(itemId, nickname, rating, comment = '') {
   });
 
   return data;
+}
+
+/** 비밀번호 검증 */
+export async function verifyPassword(ratingId, password) {
+  if (!supabase) return false;
+  const pwHash = await hashPassword(password);
+  const { data, error } = await supabase
+    .from('item_ratings')
+    .select('id')
+    .eq('id', ratingId)
+    .eq('password_hash', pwHash)
+    .single();
+  if (error || !data) return false;
+  return true;
+}
+
+/** 평가 수정 */
+export async function updateRating(ratingId, rating, comment, password) {
+  if (!supabase) throw new Error('Supabase not initialized');
+  const pwHash = await hashPassword(password);
+
+  // 비밀번호 확인
+  const { data: check } = await supabase
+    .from('item_ratings')
+    .select('id')
+    .eq('id', ratingId)
+    .eq('password_hash', pwHash)
+    .single();
+  if (!check) throw new Error('비밀번호가 일치하지 않습니다');
+
+  const { error } = await supabase
+    .from('item_ratings')
+    .update({ rating, comment: comment.trim() })
+    .eq('id', ratingId)
+    .eq('password_hash', pwHash);
+
+  if (error) throw error;
+
+  // 캐시 갱신 (서버에서 다시 가져오기)
+  await fetchAllRatingSummaries();
+}
+
+/** 평가 삭제 */
+export async function deleteRating(ratingId, password) {
+  if (!supabase) throw new Error('Supabase not initialized');
+  const pwHash = await hashPassword(password);
+
+  // 비밀번호 확인
+  const { data: check } = await supabase
+    .from('item_ratings')
+    .select('id')
+    .eq('id', ratingId)
+    .eq('password_hash', pwHash)
+    .single();
+  if (!check) throw new Error('비밀번호가 일치하지 않습니다');
+
+  const { error } = await supabase
+    .from('item_ratings')
+    .delete()
+    .eq('id', ratingId)
+    .eq('password_hash', pwHash);
+
+  if (error) throw error;
+
+  // 캐시 갱신
+  await fetchAllRatingSummaries();
 }

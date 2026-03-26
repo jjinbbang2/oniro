@@ -1,6 +1,6 @@
 import { getWeaponStats, getArmorStats } from './data.js';
 import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating } from './supabase.js';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating } from './supabase.js';
 import { renderStars } from './render.js';
 
 const overlay = document.getElementById('modalOverlay');
@@ -341,6 +341,12 @@ function buildRatingSection(itemId) {
   commentInput.maxLength = 200;
   commentInput.rows = 2;
 
+  const passwordInput = document.createElement('input');
+  passwordInput.type = 'password';
+  passwordInput.className = 'rating-password';
+  passwordInput.placeholder = '비밀번호 (수정/삭제 시 필요)';
+  passwordInput.maxLength = 30;
+
   const submitBtn = document.createElement('button');
   submitBtn.className = 'rating-submit';
   submitBtn.textContent = '평가 등록';
@@ -351,13 +357,15 @@ function buildRatingSection(itemId) {
   submitBtn.addEventListener('click', async () => {
     errorMsg.textContent = '';
     const nickname = nicknameInput.value.trim();
+    const password = passwordInput.value;
     if (!nickname) { errorMsg.textContent = '닉네임을 입력해주세요'; return; }
     if (selectedRating === 0) { errorMsg.textContent = '별점을 선택해주세요'; return; }
+    if (!password) { errorMsg.textContent = '비밀번호를 입력해주세요'; return; }
 
     submitBtn.disabled = true;
     submitBtn.textContent = '등록 중...';
     try {
-      await submitRating(itemId, nickname, selectedRating, commentInput.value.trim());
+      await submitRating(itemId, nickname, selectedRating, commentInput.value.trim(), password);
       localStorage.setItem('oniro_nickname', nickname);
 
       // Refresh ratings list and summary
@@ -367,6 +375,7 @@ function buildRatingSection(itemId) {
       // Reset form
       selectedRating = 0;
       commentInput.value = '';
+      passwordInput.value = '';
       starInput.querySelectorAll('.rating-star-btn').forEach(s => {
         s.textContent = '☆';
         s.classList.remove('selected');
@@ -385,7 +394,7 @@ function buildRatingSection(itemId) {
     }
   });
 
-  form.append(starInput, nicknameInput, commentInput, submitBtn, errorMsg);
+  form.append(starInput, nicknameInput, commentInput, passwordInput, submitBtn, errorMsg);
   section.appendChild(form);
 
   // Ratings list
@@ -422,14 +431,154 @@ async function loadRatingsList(itemId, container) {
     card.appendChild(header);
 
     if (r.comment) {
-      const comment = document.createElement('p');
-      comment.className = 'rating-card-comment';
-      comment.textContent = r.comment;
-      card.appendChild(comment);
+      const commentEl = document.createElement('p');
+      commentEl.className = 'rating-card-comment';
+      commentEl.textContent = r.comment;
+      card.appendChild(commentEl);
+    }
+
+    // 수정/삭제 버튼 (비밀번호가 설정된 평가만)
+    if (r.password_hash) {
+      const actions = document.createElement('div');
+      actions.className = 'rating-card-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'rating-action-btn';
+      editBtn.textContent = '수정';
+      editBtn.addEventListener('click', () => showEditForm(r, itemId, card, container));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'rating-action-btn rating-action-delete';
+      deleteBtn.textContent = '삭제';
+      deleteBtn.addEventListener('click', () => showDeleteConfirm(r, itemId, card, container));
+
+      actions.append(editBtn, deleteBtn);
+      card.appendChild(actions);
     }
 
     container.appendChild(card);
   }
+}
+
+/** Show inline edit form */
+function showEditForm(r, itemId, card, listContainer) {
+  // Replace card content with edit form
+  const existing = card.querySelector('.rating-edit-form');
+  if (existing) { existing.remove(); return; }
+
+  const form = document.createElement('div');
+  form.className = 'rating-edit-form';
+
+  // Star input
+  const starInput = document.createElement('div');
+  starInput.className = 'rating-star-input';
+  let newRating = r.rating;
+  for (let i = 1; i <= 5; i++) {
+    const star = document.createElement('button');
+    star.className = `rating-star-btn${i <= r.rating ? ' selected' : ''}`;
+    star.textContent = i <= r.rating ? '★' : '☆';
+    star.addEventListener('click', () => {
+      newRating = i;
+      starInput.querySelectorAll('.rating-star-btn').forEach((s, idx) => {
+        s.textContent = idx < i ? '★' : '☆';
+        s.classList.toggle('selected', idx < i);
+      });
+    });
+    starInput.appendChild(star);
+  }
+
+  const commentInput = document.createElement('textarea');
+  commentInput.className = 'rating-comment';
+  commentInput.value = r.comment || '';
+  commentInput.maxLength = 200;
+  commentInput.rows = 2;
+
+  const pwInput = document.createElement('input');
+  pwInput.type = 'password';
+  pwInput.className = 'rating-password';
+  pwInput.placeholder = '비밀번호 입력';
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'rating-edit-btns';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'rating-submit';
+  saveBtn.textContent = '수정 완료';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'rating-action-btn';
+  cancelBtn.textContent = '취소';
+  cancelBtn.addEventListener('click', () => form.remove());
+
+  const errMsg = document.createElement('p');
+  errMsg.className = 'rating-error';
+
+  saveBtn.addEventListener('click', async () => {
+    if (!pwInput.value) { errMsg.textContent = '비밀번호를 입력해주세요'; return; }
+    saveBtn.disabled = true;
+    saveBtn.textContent = '수정 중...';
+    try {
+      await updateRating(r.id, newRating, commentInput.value.trim(), pwInput.value);
+      await loadRatingsList(itemId, listContainer);
+      if (_onRatingSubmitted) _onRatingSubmitted();
+    } catch (err) {
+      errMsg.textContent = err.message;
+      saveBtn.disabled = false;
+      saveBtn.textContent = '수정 완료';
+    }
+  });
+
+  btnRow.append(saveBtn, cancelBtn);
+  form.append(starInput, commentInput, pwInput, btnRow, errMsg);
+  card.appendChild(form);
+}
+
+/** Show delete confirmation */
+function showDeleteConfirm(r, itemId, card, listContainer) {
+  const existing = card.querySelector('.rating-delete-confirm');
+  if (existing) { existing.remove(); return; }
+
+  const confirm = document.createElement('div');
+  confirm.className = 'rating-delete-confirm';
+
+  const pwInput = document.createElement('input');
+  pwInput.type = 'password';
+  pwInput.className = 'rating-password';
+  pwInput.placeholder = '비밀번호 입력';
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'rating-edit-btns';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'rating-submit rating-submit-delete';
+  delBtn.textContent = '삭제 확인';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'rating-action-btn';
+  cancelBtn.textContent = '취소';
+  cancelBtn.addEventListener('click', () => confirm.remove());
+
+  const errMsg = document.createElement('p');
+  errMsg.className = 'rating-error';
+
+  delBtn.addEventListener('click', async () => {
+    if (!pwInput.value) { errMsg.textContent = '비밀번호를 입력해주세요'; return; }
+    delBtn.disabled = true;
+    delBtn.textContent = '삭제 중...';
+    try {
+      await deleteRating(r.id, pwInput.value);
+      await loadRatingsList(itemId, listContainer);
+      if (_onRatingSubmitted) _onRatingSubmitted();
+    } catch (err) {
+      errMsg.textContent = err.message;
+      delBtn.disabled = false;
+      delBtn.textContent = '삭제 확인';
+    }
+  });
+
+  btnRow.append(delBtn, cancelBtn);
+  confirm.append(pwInput, btnRow, errMsg);
+  card.appendChild(confirm);
 }
 
 /** Format timestamp */
