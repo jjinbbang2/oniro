@@ -545,11 +545,16 @@
     grid-template-columns: 1fr;
   }
 
+  .modal-col-info {
+    overflow-y: visible;
+  }
+
   .modal-col-rating {
     border-left: none;
     padding-left: 0;
     border-top: 1px solid var(--border);
     padding-top: var(--gap-lg);
+    overflow-y: visible;
   }
 
   .weapon-stats {
