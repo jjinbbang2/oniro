@@ -233,6 +233,14 @@
   gap: 4px;
 }
 
+/* ====== Disclaimer ====== */
+.detail-disclaimer {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: -12px;
+}
+
 /* ====== Responsive Modal ====== */
 @media (max-width: 768px) {
   .modal-overlay {

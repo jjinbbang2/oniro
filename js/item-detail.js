@@ -36,13 +36,19 @@ export function openItemDetail(item) {
   // Weapon stats
   if (item.타입 === '무기' || item._category === '무기') {
     const ws = getWeaponStats(item.아이템ID);
-    if (ws) bodyEl.appendChild(buildWeaponStats(ws));
+    if (ws) {
+      bodyEl.appendChild(buildWeaponStats(ws));
+      bodyEl.appendChild(buildDisclaimer());
+    }
   }
 
   // Armor stats
   if (['갑옷(상의)', '투구', '장갑', '신발', '벨트'].includes(item.타입)) {
     const as = getArmorStats(item.아이템ID);
-    if (as) bodyEl.appendChild(buildArmorStats(as));
+    if (as) {
+      bodyEl.appendChild(buildArmorStats(as));
+      bodyEl.appendChild(buildDisclaimer());
+    }
   }
 
   // Options
@@ -250,7 +256,7 @@ function buildSkillsSection(skills) {
       : `Lv.${skill.최소레벨}~${skill.최대레벨}`;
 
     const prob = document.createElement('span');
-    prob.textContent = skill.최소확률 !== undefined
+    prob.textContent = skill['최소확률%'] !== undefined
       ? `확률 ${skill['최소확률%']}%~${skill['최대확률%']}%`
       : '';
 
@@ -268,6 +274,14 @@ function buildSkillsSection(skills) {
   }
 
   return section;
+}
+
+/** Build disclaimer notice */
+function buildDisclaimer() {
+  const p = document.createElement('p');
+  p.className = 'detail-disclaimer';
+  p.textContent = '* 인게임 데이터와 다를 수 있습니다';
+  return p;
 }
 
 /** Helper: create a detail section with title */
