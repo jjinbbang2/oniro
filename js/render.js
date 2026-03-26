@@ -1,4 +1,4 @@
-import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js?v=1.4.4';
+import { rarityClass, optionDisplayName, formatOptionValue, OPTION_NAMES } from './utils.js?v=1.4.4';
 import { getRatingSummary } from './supabase.js?v=1.4.4';
 
 const tbody = document.getElementById('itemTableBody');
@@ -119,7 +119,29 @@ export function renderTable(pageItems, totalItems) {
       tdOptions.appendChild(pills);
     }
 
-    tr.append(tdLevel, tdName, tdType, tdSub, tdRarity, tdRating, tdOptions);
+    // Skills
+    const tdSkills = document.createElement('td');
+    tdSkills.className = 'col-skills';
+    if (item.스킬?.length) {
+      const pills = document.createElement('div');
+      pills.className = 'skill-pills';
+      const visibleSkills = item.스킬.slice(0, 2);
+      for (const skill of visibleSkills) {
+        const pill = document.createElement('span');
+        pill.className = 'skill-pill';
+        pill.textContent = skill['이름(한국어)'] || skill.이름;
+        pills.appendChild(pill);
+      }
+      if (item.스킬.length > 2) {
+        const more = document.createElement('span');
+        more.className = 'skill-pill';
+        more.textContent = `+${item.스킬.length - 2}`;
+        pills.appendChild(more);
+      }
+      tdSkills.appendChild(pills);
+    }
+
+    tr.append(tdLevel, tdName, tdType, tdSub, tdRarity, tdRating, tdOptions, tdSkills);
     fragment.appendChild(tr);
   }
 
@@ -216,6 +238,47 @@ export function renderSubtypeTags(subtypes, activeSubtypes, onToggle) {
   }
 }
 
+/** Render option filter tags */
+export function renderOptionTags(uniqueOptions, activeOptions, searchQuery, onToggle) {
+  const container = document.getElementById('optionTags');
+  container.innerHTML = '';
+  const q = (searchQuery || '').toLowerCase();
+
+  // Sort by Korean name
+  const sorted = [...uniqueOptions.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+  for (const [id, name] of sorted) {
+    if (q && !name.toLowerCase().includes(q)) continue;
+    const btn = document.createElement('button');
+    btn.className = `filter-tag${activeOptions.includes(id) ? ' active' : ''}`;
+    btn.textContent = name;
+    btn.addEventListener('click', () => onToggle(id));
+    container.appendChild(btn);
+  }
+  if (container.children.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-muted);font-size:0.8rem">검색 결과 없음</span>';
+  }
+}
+
+/** Render skill filter tags */
+export function renderSkillTags(uniqueSkills, activeSkills, searchQuery, onToggle) {
+  const container = document.getElementById('skillTags');
+  container.innerHTML = '';
+  const q = (searchQuery || '').toLowerCase();
+
+  const sorted = [...uniqueSkills].sort((a, b) => a.localeCompare(b, 'ko'));
+  for (const name of sorted) {
+    if (q && !name.toLowerCase().includes(q)) continue;
+    const btn = document.createElement('button');
+    btn.className = `filter-tag${activeSkills.includes(name) ? ' active' : ''}`;
+    btn.textContent = name;
+    btn.addEventListener('click', () => onToggle(name));
+    container.appendChild(btn);
+  }
+  if (container.children.length === 0) {
+    container.innerHTML = '<span style="color:var(--text-muted);font-size:0.8rem">검색 결과 없음</span>';
+  }
+}
+
 /** Update active filters display */
 export function renderActiveFilters(state, onRemove, onClearAll) {
   const container = document.getElementById('activeFilters');
@@ -232,6 +295,16 @@ export function renderActiveFilters(state, onRemove, onClearAll) {
   if (state.rarities?.length) {
     for (const r of state.rarities) {
       badges.push({ label: `희귀도: ${r}`, remove: () => onRemove('rarity', r) });
+    }
+  }
+  if (state.options?.length) {
+    for (const optId of state.options) {
+      badges.push({ label: `옵션: ${OPTION_NAMES[optId] || optId}`, remove: () => onRemove('option', optId) });
+    }
+  }
+  if (state.skills?.length) {
+    for (const sk of state.skills) {
+      badges.push({ label: `스킬: ${sk}`, remove: () => onRemove('skill', sk) });
     }
   }
   if (state.lvMin) {

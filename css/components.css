@@ -401,6 +401,55 @@
   white-space: nowrap;
 }
 
+/* ====== Filter Dropdown with Search ====== */
+.filter-dropdown-search {
+  min-width: 240px;
+  max-width: 360px;
+}
+
+.filter-search {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  margin-bottom: var(--gap-sm);
+  outline: none;
+}
+
+.filter-search:focus {
+  border-color: var(--accent);
+}
+
+.filter-tags-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ====== Skill Column ====== */
+.col-skills {
+  min-width: 160px;
+  max-width: 260px;
+}
+
+.skill-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.skill-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
 /* ====== Rating Column ====== */
 .col-rating {
   width: 120px;

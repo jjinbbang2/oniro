@@ -101,6 +101,28 @@
           </div>
         </div>
 
+        <!-- Option Filter -->
+        <div class="filter-group">
+          <button class="filter-toggle" id="optionToggle">
+            옵션 <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="filter-dropdown filter-dropdown-search" id="optionDropdown" hidden>
+            <input type="text" class="filter-search" id="optionSearch" placeholder="옵션 검색..." autocomplete="off">
+            <div class="filter-tags filter-tags-scroll" id="optionTags"></div>
+          </div>
+        </div>
+
+        <!-- Skill Filter -->
+        <div class="filter-group">
+          <button class="filter-toggle" id="skillToggle">
+            스킬 <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="filter-dropdown filter-dropdown-search" id="skillDropdown" hidden>
+            <input type="text" class="filter-search" id="skillSearch" placeholder="스킬 검색..." autocomplete="off">
+            <div class="filter-tags filter-tags-scroll" id="skillTags"></div>
+          </div>
+        </div>
+
         <!-- Level Range -->
         <div class="filter-group filter-level">
           <label>레벨</label>
@@ -156,6 +178,7 @@
               <th class="col-rarity">희귀도</th>
               <th class="col-rating">별점</th>
               <th class="col-options">주요 옵션</th>
+              <th class="col-skills">주요 스킬</th>
             </tr>
           </thead>
           <tbody id="itemTableBody">

@@ -33,6 +33,25 @@ export function filterItems(items, state) {
     result = result.filter(item => item.레벨 <= state.lvMax);
   }
 
+  // Option filter (AND: must have all selected options)
+  if (state.options?.length) {
+    const optIds = new Set(state.options.map(Number));
+    result = result.filter(item =>
+      item.옵션 && optIds.size > 0 &&
+      [...optIds].every(id => item.옵션.some(o => o.ID === id))
+    );
+  }
+
+  // Skill filter (OR: must have at least one selected skill)
+  if (state.skills?.length) {
+    const skillSet = new Set(state.skills);
+    result = result.filter(item =>
+      item.스킬 && item.스킬.some(s =>
+        skillSet.has(s['이름(한국어)'] || s.이름)
+      )
+    );
+  }
+
   // Text search (spaces ignored)
   if (state.query) {
     const q = state.query.replace(/\s/g, '').toLowerCase();

@@ -149,7 +149,8 @@ body {
     align-items: flex-start;
   }
 
-  .col-options {
+  .col-options,
+  .col-skills {
     display: none;
   }
 

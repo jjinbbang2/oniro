@@ -1,4 +1,4 @@
-import { categoryOf } from './utils.js?v=1.4.4';
+import { categoryOf, OPTION_NAMES } from './utils.js?v=1.4.4';
 
 /** Loaded database */
 let db = null;
@@ -42,6 +42,24 @@ export async function loadData() {
     subtypesByCategory[cat].add(item.세부타입);
   }
 
+  // Collect unique options (ID → Korean name, only those that exist in items)
+  const uniqueOptions = new Map();
+  for (const item of validItems) {
+    for (const opt of item.옵션 || []) {
+      if (opt.ID === 0 || uniqueOptions.has(opt.ID)) continue;
+      uniqueOptions.set(opt.ID, OPTION_NAMES[opt.ID] || opt.이름 || `옵션 #${opt.ID}`);
+    }
+  }
+
+  // Collect unique skills (Korean name, deduplicated)
+  const uniqueSkills = new Set();
+  for (const item of validItems) {
+    for (const skill of item.스킬 || []) {
+      const name = skill['이름(한국어)'] || skill.이름;
+      if (name) uniqueSkills.add(name);
+    }
+  }
+
   // Category counts
   const categoryCounts = { all: validItems.length };
   for (const item of validItems) {
@@ -55,6 +73,8 @@ export async function loadData() {
     legend,
     subtypesByCategory,
     categoryCounts,
+    uniqueOptions,
+    uniqueSkills,
   };
 
   return db;

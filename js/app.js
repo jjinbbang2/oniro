@@ -6,6 +6,8 @@ import {
   renderPagination,
   updateTabCounts,
   renderSubtypeTags,
+  renderOptionTags,
+  renderSkillTags,
   renderActiveFilters,
 } from './render.js?v=1.4.4';
 import { initModal, openItemDetail, setOnRatingSubmitted } from './item-detail.js?v=1.4.4';
@@ -18,6 +20,8 @@ const state = {
   category: 'all',
   subtypes: [],
   rarities: [],
+  options: [],
+  skills: [],
   lvMin: null,
   lvMax: null,
   sortKey: 'level-asc',
@@ -105,9 +109,11 @@ function bindEvents() {
     });
   });
 
-  // Subtype dropdown toggle
+  // Dropdown toggles
   setupDropdown('subtypeToggle', 'subtypeDropdown');
   setupDropdown('rarityToggle', 'rarityDropdown');
+  setupDropdown('optionToggle', 'optionDropdown');
+  setupDropdown('skillToggle', 'skillDropdown');
 
   // Rarity tags
   document.querySelectorAll('#rarityTags .filter-tag').forEach(tag => {
@@ -120,6 +126,18 @@ function bindEvents() {
       applyFilters();
     });
   });
+
+  // Option search + filter
+  document.getElementById('optionSearch').addEventListener('input', debounce((e) => {
+    const db = getDB();
+    if (db) renderOptionTags(db.uniqueOptions, state.options, e.target.value, handleOptionToggle);
+  }, 200));
+
+  // Skill search + filter
+  document.getElementById('skillSearch').addEventListener('input', debounce((e) => {
+    const db = getDB();
+    if (db) renderSkillTags(db.uniqueSkills, state.skills, e.target.value, handleSkillToggle);
+  }, 200));
 
   // Level inputs
   const lvMin = document.getElementById('lvMin');
@@ -201,6 +219,12 @@ function handleRemoveFilter(type, value) {
       state.lvMin = null;
       document.getElementById('lvMin').value = '';
       break;
+    case 'option':
+      state.options = state.options.filter(o => o !== value);
+      break;
+    case 'skill':
+      state.skills = state.skills.filter(s => s !== value);
+      break;
     case 'lvMax':
       state.lvMax = null;
       document.getElementById('lvMax').value = '';
@@ -211,13 +235,33 @@ function handleRemoveFilter(type, value) {
   applyFilters();
 }
 
+function handleOptionToggle(optId) {
+  toggleArrayItem(state.options, optId);
+  updateToggleState('optionToggle', state.options);
+  state.page = 1;
+  syncUIFromState();
+  applyFilters();
+}
+
+function handleSkillToggle(skillName) {
+  toggleArrayItem(state.skills, skillName);
+  updateToggleState('skillToggle', state.skills);
+  state.page = 1;
+  syncUIFromState();
+  applyFilters();
+}
+
 function handleClearAll() {
   state.subtypes = [];
   state.rarities = [];
+  state.options = [];
+  state.skills = [];
   state.lvMin = null;
   state.lvMax = null;
   document.getElementById('lvMin').value = '';
   document.getElementById('lvMax').value = '';
+  document.getElementById('optionSearch').value = '';
+  document.getElementById('skillSearch').value = '';
   state.page = 1;
   syncUIFromState();
   applyFilters();
@@ -266,6 +310,14 @@ function syncUIFromState() {
       applyFilters();
     });
     updateToggleState('subtypeToggle', state.subtypes);
+
+    // Option tags
+    renderOptionTags(db.uniqueOptions, state.options, document.getElementById('optionSearch').value, handleOptionToggle);
+    updateToggleState('optionToggle', state.options);
+
+    // Skill tags
+    renderSkillTags(db.uniqueSkills, state.skills, document.getElementById('skillSearch').value, handleSkillToggle);
+    updateToggleState('skillToggle', state.skills);
   }
 
   // Rarity tag active state
