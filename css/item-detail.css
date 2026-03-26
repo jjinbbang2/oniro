@@ -231,53 +231,20 @@
   color: var(--accent);
 }
 
-/* PC: hover tooltip */
-.option-info-icon::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 6px 10px;
-  font-size: 0.7rem;
-  line-height: 1.4;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  white-space: normal;
-  width: max-content;
-  max-width: 220px;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.option-info-icon:hover::after {
-  opacity: 1;
-}
-
-/* Mobile: click popup */
+/* Tooltip popup (both PC hover and mobile click use JS popup) */
 .option-tooltip-popup {
   position: fixed;
   z-index: 2000;
-  padding: 10px 14px;
-  font-size: 0.8rem;
+  padding: 8px 12px;
+  font-size: 0.75rem;
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-primary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
-  max-width: 280px;
-}
-
-@media (max-width: 768px) {
-  .option-info-icon::after {
-    display: none;
-  }
+  max-width: 250px;
+  pointer-events: none;
 }
 
 /* ====== Weapon Stats ====== */

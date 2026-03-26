@@ -1,7 +1,7 @@
-import { getWeaponStats, getArmorStats } from './data.js?v=1.4.15';
-import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.15';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.15';
-import { renderStars } from './render.js?v=1.4.15';
+import { getWeaponStats, getArmorStats } from './data.js?v=1.4.16';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.16';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.16';
+import { renderStars } from './render.js?v=1.4.16';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
@@ -17,14 +17,10 @@ const OPTION_TYPE_DESC = {
   '랜덤부여': 'base값 0, 게임이 드랍 시 값을 부여 (예: 공속 0→22%)',
 };
 
-/** Show tooltip (PC: hover handled by CSS, mobile: click popup) */
+/** Show/hide fixed tooltip popup */
 function showOptionTooltip(el, text) {
-  // Remove existing tooltip
   const existing = document.querySelector('.option-tooltip-popup');
   if (existing) existing.remove();
-
-  const isMobile = window.innerWidth <= 768;
-  if (!isMobile) return; // PC uses CSS hover
 
   const popup = document.createElement('div');
   popup.className = 'option-tooltip-popup';
@@ -32,11 +28,16 @@ function showOptionTooltip(el, text) {
   document.body.appendChild(popup);
 
   const rect = el.getBoundingClientRect();
-  popup.style.top = `${rect.bottom + 8}px`;
-  popup.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - popup.offsetWidth - 8))}px`;
+  popup.style.top = `${rect.bottom + 6}px`;
+  popup.style.left = `${Math.max(8, Math.min(rect.left - popup.offsetWidth / 2, window.innerWidth - popup.offsetWidth - 8))}px`;
 
   const dismiss = () => { popup.remove(); document.removeEventListener('click', dismiss); };
   setTimeout(() => document.addEventListener('click', dismiss), 10);
+}
+
+function hideOptionTooltip() {
+  const existing = document.querySelector('.option-tooltip-popup');
+  if (existing) existing.remove();
 }
 
 /** Initialize modal event listeners */
@@ -281,11 +282,12 @@ function buildOptionsSection(options) {
       const info = document.createElement('span');
       info.className = 'option-info-icon';
       info.innerHTML = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="7"/><line x1="8" y1="7" x2="8" y2="11"/><circle cx="8" cy="5" r="0.5" fill="currentColor"/></svg>';
-      info.dataset.tooltip = tooltip;
       info.addEventListener('click', (e) => {
         e.stopPropagation();
         showOptionTooltip(info, tooltip);
       });
+      info.addEventListener('mouseenter', () => showOptionTooltip(info, tooltip));
+      info.addEventListener('mouseleave', hideOptionTooltip);
       tdType.appendChild(info);
     }
 
