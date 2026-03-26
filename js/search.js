@@ -36,9 +36,9 @@ export function filterItems(items, state) {
   if (state.query) {
     const q = state.query.toLowerCase();
     result = result.filter(item =>
-      item.한국어이름.toLowerCase().includes(q) ||
-      item.에디터이름.toLowerCase().includes(q) ||
-      item.내부이름.toLowerCase().includes(q)
+      (item.한국어이름 || '').toLowerCase().includes(q) ||
+      (item.에디터이름 || '').toLowerCase().includes(q) ||
+      (item.내부이름 || '').toLowerCase().includes(q)
     );
   }
 

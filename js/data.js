@@ -24,14 +24,15 @@ export async function loadData() {
     armorMap.set(a.ID, a);
   }
 
-  // Add category field to items
-  for (const item of items) {
+  // Filter out items without a Korean name and add category field
+  const validItems = items.filter(item => item.한국어이름 && item.한국어이름.trim() !== '');
+  for (const item of validItems) {
     item._category = categoryOf(item.타입);
   }
 
   // Collect unique subtypes per category
   const subtypesByCategory = {};
-  for (const item of items) {
+  for (const item of validItems) {
     if (!item.세부타입) continue;
     const cat = item._category;
     if (!subtypesByCategory[cat]) subtypesByCategory[cat] = new Set();
@@ -39,13 +40,13 @@ export async function loadData() {
   }
 
   // Category counts
-  const categoryCounts = { all: items.length };
-  for (const item of items) {
+  const categoryCounts = { all: validItems.length };
+  for (const item of validItems) {
     categoryCounts[item._category] = (categoryCounts[item._category] || 0) + 1;
   }
 
   db = {
-    items,
+    items: validItems,
     weaponMap,
     armorMap,
     legend,

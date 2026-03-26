@@ -41,11 +41,11 @@ export function renderTable(pageItems, totalItems) {
     tdName.className = 'col-name';
     const nameDiv = document.createElement('div');
     nameDiv.className = `item-name rarity-text-${rarityClass(item.표시희귀도)}`;
-    nameDiv.textContent = item.한국어이름;
+    nameDiv.textContent = item.한국어이름 || item.내부이름;
     tdName.appendChild(nameDiv);
     const enDiv = document.createElement('div');
     enDiv.className = 'item-name-en';
-    enDiv.textContent = item.에디터이름;
+    enDiv.textContent = item.에디터이름 || '';
     tdName.appendChild(enDiv);
 
     // Type
