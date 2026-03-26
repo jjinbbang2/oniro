@@ -8,8 +8,9 @@ import {
   renderSubtypeTags,
   renderActiveFilters,
 } from './render.js';
-import { initModal, openItemDetail } from './item-detail.js';
+import { initModal, openItemDetail, setOnRatingSubmitted } from './item-detail.js';
 import { debounce, parseHash, writeHash } from './utils.js';
+import { initSupabase, fetchAllRatingSummaries } from './supabase.js';
 
 /** Application state */
 const state = {
@@ -42,8 +43,15 @@ async function init() {
       state.sortKey = `${hashState.sort}-${hashState.order}`;
     }
 
+    // Init Supabase (non-blocking, ratings are optional)
+    const supabaseReady = initSupabase();
+    if (supabaseReady) {
+      await fetchAllRatingSummaries();
+    }
+
     // Init UI
     initModal();
+    setOnRatingSubmitted(() => applyFilters());
     updateTabCounts(db.categoryCounts);
     syncUIFromState();
     applyFilters();

@@ -110,6 +110,8 @@
           <option value="name-desc">이름 역순</option>
           <option value="rarity-desc">희귀도 높은순</option>
           <option value="rarity-asc">희귀도 낮은순</option>
+          <option value="rating-desc">별점 높은순</option>
+          <option value="rating-asc">별점 낮은순</option>
           <option value="id-asc">ID 순</option>
         </select>
         <label class="sort-label" for="perPageSelect">표시</label>
@@ -132,6 +134,7 @@
               <th class="col-type">타입</th>
               <th class="col-subtype">세부</th>
               <th class="col-rarity">희귀도</th>
+              <th class="col-rating">별점</th>
               <th class="col-options">주요 옵션</th>
             </tr>
           </thead>
@@ -169,6 +172,8 @@
     </div>
   </div>
 
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
 </body>

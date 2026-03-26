@@ -1,4 +1,5 @@
 import { rarityWeight } from './utils.js';
+import { getRatingSummary } from './supabase.js';
 
 /**
  * Filter and sort items based on current state.
@@ -54,6 +55,11 @@ export function filterItems(items, state) {
         return a.한국어이름.localeCompare(b.한국어이름, 'ko') * dir;
       case 'rarity':
         return (rarityWeight(a.표시희귀도) - rarityWeight(b.표시희귀도)) * dir;
+      case 'rating': {
+        const ra = getRatingSummary(a.아이템ID);
+        const rb = getRatingSummary(b.아이템ID);
+        return (ra.avg - rb.avg || ra.count - rb.count) * dir;
+      }
       case 'id':
         return (a.아이템ID - b.아이템ID) * dir;
       default:

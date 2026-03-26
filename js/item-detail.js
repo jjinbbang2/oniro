@@ -1,5 +1,7 @@
 import { getWeaponStats, getArmorStats } from './data.js';
 import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating } from './supabase.js';
+import { renderStars } from './render.js';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
@@ -60,6 +62,11 @@ export function openItemDetail(item) {
   // Skills
   if (item.스킬?.length) {
     bodyEl.appendChild(buildSkillsSection(item.스킬));
+  }
+
+  // Rating section
+  if (isSupabaseReady()) {
+    bodyEl.appendChild(buildRatingSection(item.아이템ID));
   }
 
   overlay.hidden = false;
@@ -272,6 +279,170 @@ function buildSkillsSection(skills) {
   }
 
   return section;
+}
+
+/** Callback when a rating is submitted (set by app.js) */
+let _onRatingSubmitted = null;
+export function setOnRatingSubmitted(fn) {
+  _onRatingSubmitted = fn;
+}
+
+/** Build rating section */
+function buildRatingSection(itemId) {
+  const section = createSection('평가');
+
+  // Current summary
+  const summary = getRatingSummary(itemId);
+  const summaryEl = document.createElement('div');
+  summaryEl.className = 'rating-summary';
+  if (summary.count > 0) {
+    summaryEl.innerHTML = `<span class="rating-stars-lg">${renderStars(summary.avg)}</span> <span class="rating-avg-lg">${summary.avg}</span> <span class="rating-count-lg">(${summary.count}명 평가)</span>`;
+  } else {
+    summaryEl.innerHTML = '<span class="rating-empty-msg">아직 평가가 없습니다</span>';
+  }
+  section.appendChild(summaryEl);
+
+  // Rating form
+  const form = document.createElement('div');
+  form.className = 'rating-form';
+
+  // Star input
+  const starInput = document.createElement('div');
+  starInput.className = 'rating-star-input';
+  let selectedRating = 0;
+  for (let i = 1; i <= 5; i++) {
+    const star = document.createElement('button');
+    star.className = 'rating-star-btn';
+    star.textContent = '☆';
+    star.dataset.value = i;
+    star.addEventListener('click', () => {
+      selectedRating = i;
+      starInput.querySelectorAll('.rating-star-btn').forEach((s, idx) => {
+        s.textContent = idx < i ? '★' : '☆';
+        s.classList.toggle('selected', idx < i);
+      });
+    });
+    starInput.appendChild(star);
+  }
+
+  const nicknameInput = document.createElement('input');
+  nicknameInput.type = 'text';
+  nicknameInput.className = 'rating-nickname';
+  nicknameInput.placeholder = '닉네임 (최대 20자)';
+  nicknameInput.maxLength = 20;
+
+  // Restore last nickname
+  const lastNick = localStorage.getItem('oniro_nickname') || '';
+  nicknameInput.value = lastNick;
+
+  const commentInput = document.createElement('textarea');
+  commentInput.className = 'rating-comment';
+  commentInput.placeholder = '한줄평 (선택, 최대 200자)';
+  commentInput.maxLength = 200;
+  commentInput.rows = 2;
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'rating-submit';
+  submitBtn.textContent = '평가 등록';
+
+  const errorMsg = document.createElement('p');
+  errorMsg.className = 'rating-error';
+
+  submitBtn.addEventListener('click', async () => {
+    errorMsg.textContent = '';
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) { errorMsg.textContent = '닉네임을 입력해주세요'; return; }
+    if (selectedRating === 0) { errorMsg.textContent = '별점을 선택해주세요'; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '등록 중...';
+    try {
+      await submitRating(itemId, nickname, selectedRating, commentInput.value.trim());
+      localStorage.setItem('oniro_nickname', nickname);
+
+      // Refresh ratings list and summary
+      const newSummary = getRatingSummary(itemId);
+      summaryEl.innerHTML = `<span class="rating-stars-lg">${renderStars(newSummary.avg)}</span> <span class="rating-avg-lg">${newSummary.avg}</span> <span class="rating-count-lg">(${newSummary.count}명 평가)</span>`;
+
+      // Reset form
+      selectedRating = 0;
+      commentInput.value = '';
+      starInput.querySelectorAll('.rating-star-btn').forEach(s => {
+        s.textContent = '☆';
+        s.classList.remove('selected');
+      });
+
+      // Refresh list
+      await loadRatingsList(itemId, listEl);
+
+      // Notify app to refresh table
+      if (_onRatingSubmitted) _onRatingSubmitted();
+    } catch (err) {
+      errorMsg.textContent = '등록 실패: ' + err.message;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '평가 등록';
+    }
+  });
+
+  form.append(starInput, nicknameInput, commentInput, submitBtn, errorMsg);
+  section.appendChild(form);
+
+  // Ratings list
+  const listEl = document.createElement('div');
+  listEl.className = 'rating-list';
+  listEl.innerHTML = '<p class="rating-loading">평가 불러오는 중...</p>';
+  section.appendChild(listEl);
+
+  loadRatingsList(itemId, listEl);
+
+  return section;
+}
+
+/** Load and render ratings list */
+async function loadRatingsList(itemId, container) {
+  const ratings = await fetchItemRatings(itemId);
+  container.innerHTML = '';
+
+  if (ratings.length === 0) {
+    container.innerHTML = '<p class="rating-empty-list">등록된 평가가 없습니다</p>';
+    return;
+  }
+
+  for (const r of ratings) {
+    const card = document.createElement('div');
+    card.className = 'rating-card';
+
+    const header = document.createElement('div');
+    header.className = 'rating-card-header';
+    header.innerHTML = `<span class="rating-card-nick">${escapeHtml(r.nickname)}</span>
+      <span class="rating-card-stars">${renderStars(r.rating)}</span>
+      <span class="rating-card-time">${formatTime(r.created_at)}</span>`;
+
+    card.appendChild(header);
+
+    if (r.comment) {
+      const comment = document.createElement('p');
+      comment.className = 'rating-card-comment';
+      comment.textContent = r.comment;
+      card.appendChild(comment);
+    }
+
+    container.appendChild(card);
+  }
+}
+
+/** Format timestamp */
+function formatTime(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/** Escape HTML */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 /** Build disclaimer notice */

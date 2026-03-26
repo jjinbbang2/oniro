@@ -1,10 +1,29 @@
 import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js';
+import { getRatingSummary } from './supabase.js';
 
 const tbody = document.getElementById('itemTableBody');
 const paginationEl = document.getElementById('pagination');
 const resultCountEl = document.getElementById('resultCount');
 const loadingEl = document.getElementById('loading');
 const noResultsEl = document.getElementById('noResults');
+
+/** Render star icons for a rating (0-5) */
+function renderStars(avg) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= Math.floor(avg)) {
+      html += '<span class="star star-full">★</span>';
+    } else if (i - avg < 1 && i - avg > 0) {
+      html += '<span class="star star-half">★</span>';
+    } else {
+      html += '<span class="star star-empty">☆</span>';
+    }
+  }
+  return html;
+}
+
+/** Exportable renderStars for item-detail */
+export { renderStars };
 
 /** Show/hide loading spinner */
 export function showLoading(show) {
@@ -66,6 +85,16 @@ export function renderTable(pageItems, totalItems) {
     badge.textContent = item.표시희귀도;
     tdRarity.appendChild(badge);
 
+    // Rating
+    const tdRating = document.createElement('td');
+    tdRating.className = 'col-rating';
+    const rs = getRatingSummary(item.아이템ID);
+    if (rs.count > 0) {
+      tdRating.innerHTML = `<span class="rating-stars">${renderStars(rs.avg)}</span> <span class="rating-avg">${rs.avg}</span><span class="rating-count">(${rs.count})</span>`;
+    } else {
+      tdRating.innerHTML = '<span class="rating-empty">-</span>';
+    }
+
     // Options
     const tdOptions = document.createElement('td');
     tdOptions.className = 'col-options';
@@ -90,7 +119,7 @@ export function renderTable(pageItems, totalItems) {
       tdOptions.appendChild(pills);
     }
 
-    tr.append(tdLevel, tdName, tdType, tdSub, tdRarity, tdOptions);
+    tr.append(tdLevel, tdName, tdType, tdSub, tdRarity, tdRating, tdOptions);
     fragment.appendChild(tr);
   }
 

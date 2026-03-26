@@ -401,6 +401,40 @@
   white-space: nowrap;
 }
 
+/* ====== Rating Column ====== */
+.col-rating {
+  width: 120px;
+  white-space: nowrap;
+}
+
+.rating-stars {
+  font-size: 0.7rem;
+  letter-spacing: -1px;
+}
+
+.star-full { color: #f0c040; }
+.star-half { color: #f0c040; opacity: 0.6; }
+.star-empty { color: var(--text-muted); opacity: 0.3; }
+
+.rating-avg {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f0c040;
+  margin-left: 2px;
+}
+
+.rating-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.rating-empty {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 /* ====== Pagination ====== */
 .pagination {
   display: flex;
