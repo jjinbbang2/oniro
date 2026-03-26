@@ -1,7 +1,7 @@
-import { getWeaponStats, getArmorStats } from './data.js?v=1.4.7';
-import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.7';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.7';
-import { renderStars } from './render.js?v=1.4.7';
+import { getWeaponStats, getArmorStats } from './data.js?v=1.4.8';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.8';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.8';
+import { renderStars } from './render.js?v=1.4.8';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
