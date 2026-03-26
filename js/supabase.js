@@ -32,6 +32,36 @@ let supabase = null;
 /** 별점 요약 캐시: Map<itemId, { avg: number, count: number }> */
 let ratingSummaryCache = new Map();
 
+/** 클라이언트 IP 캐시 */
+let clientIp = '';
+
+/** 클라이언트 IP 조회 */
+async function fetchClientIp() {
+  try {
+    const resp = await fetch('https://api.ipify.org?format=json');
+    const data = await resp.json();
+    clientIp = data.ip || '';
+  } catch {
+    clientIp = '';
+  }
+}
+
+/** 해당 아이템에 이미 평가했는지 확인 */
+export async function hasAlreadyRated(itemId) {
+  if (!supabase || !clientIp) return false;
+  try {
+    const { data } = await supabase
+      .from('item_ratings')
+      .select('id')
+      .eq('item_id', itemId)
+      .eq('ip_address', clientIp)
+      .limit(1);
+    return data && data.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /** Supabase 클라이언트 초기화 */
 export function initSupabase() {
   if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
@@ -43,6 +73,7 @@ export function initSupabase() {
     return false;
   }
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  fetchClientIp();
   return true;
 }
 
@@ -140,6 +171,12 @@ export async function submitRating(itemId, nickname, rating, comment = '', passw
 
   const pwHash = password ? await hashPassword(password) : '';
 
+  // IP 중복 체크
+  if (clientIp) {
+    const already = await hasAlreadyRated(itemId);
+    if (already) throw new Error('이미 이 아이템에 평가를 등록하셨습니다');
+  }
+
   const { data, error } = await supabase
     .from('item_ratings')
     .insert([{
@@ -148,6 +185,7 @@ export async function submitRating(itemId, nickname, rating, comment = '', passw
       rating,
       comment: comment.trim(),
       password_hash: pwHash,
+      ip_address: clientIp,
     }])
     .select();
 

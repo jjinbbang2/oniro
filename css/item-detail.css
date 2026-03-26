@@ -267,6 +267,15 @@
   font-size: 0.85rem;
 }
 
+.rating-already {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
 /* Rating Form */
 .rating-form {
   display: flex;

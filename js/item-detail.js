@@ -1,6 +1,6 @@
 import { getWeaponStats, getArmorStats } from './data.js';
 import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating } from './supabase.js';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js';
 import { renderStars } from './render.js';
 
 const overlay = document.getElementById('modalOverlay');
@@ -302,7 +302,33 @@ function buildRatingSection(itemId) {
   }
   section.appendChild(summaryEl);
 
-  // Rating form
+  // Form placeholder (비동기 체크 후 폼 또는 안내 메시지 표시)
+  const formSlot = document.createElement('div');
+  section.appendChild(formSlot);
+
+  // Ratings list
+  const listEl = document.createElement('div');
+  listEl.className = 'rating-list';
+  listEl.innerHTML = '<p class="rating-loading">평가 불러오는 중...</p>';
+  section.appendChild(listEl);
+
+  // 비동기: 중복 체크 후 폼 렌더
+  (async () => {
+    const already = await hasAlreadyRated(itemId);
+    if (already) {
+      formSlot.innerHTML = '<p class="rating-already">이미 이 아이템에 평가를 등록하셨습니다.</p>';
+    } else {
+      formSlot.appendChild(buildRatingForm(itemId, summaryEl, listEl));
+    }
+  })();
+
+  loadRatingsList(itemId, listEl);
+
+  return section;
+}
+
+/** Build rating form */
+function buildRatingForm(itemId, summaryEl, listEl) {
   const form = document.createElement('div');
   form.className = 'rating-form';
 
@@ -330,10 +356,7 @@ function buildRatingSection(itemId) {
   nicknameInput.className = 'rating-nickname';
   nicknameInput.placeholder = '닉네임 (최대 20자)';
   nicknameInput.maxLength = 20;
-
-  // Restore last nickname
-  const lastNick = localStorage.getItem('oniro_nickname') || '';
-  nicknameInput.value = lastNick;
+  nicknameInput.value = localStorage.getItem('oniro_nickname') || '';
 
   const commentInput = document.createElement('textarea');
   commentInput.className = 'rating-comment';
@@ -368,44 +391,26 @@ function buildRatingSection(itemId) {
       await submitRating(itemId, nickname, selectedRating, commentInput.value.trim(), password);
       localStorage.setItem('oniro_nickname', nickname);
 
-      // Refresh ratings list and summary
+      // Refresh summary
       const newSummary = getRatingSummary(itemId);
       summaryEl.innerHTML = `<span class="rating-stars-lg">${renderStars(newSummary.avg)}</span> <span class="rating-avg-lg">${newSummary.avg}</span> <span class="rating-count-lg">(${newSummary.count}명 평가)</span>`;
 
-      // Reset form
-      selectedRating = 0;
-      commentInput.value = '';
-      passwordInput.value = '';
-      starInput.querySelectorAll('.rating-star-btn').forEach(s => {
-        s.textContent = '☆';
-        s.classList.remove('selected');
-      });
+      // 폼을 안내 메시지로 교체
+      form.parentElement.innerHTML = '<p class="rating-already">평가가 등록되었습니다.</p>';
 
       // Refresh list
       await loadRatingsList(itemId, listEl);
 
-      // Notify app to refresh table
       if (_onRatingSubmitted) _onRatingSubmitted();
     } catch (err) {
       errorMsg.textContent = '등록 실패: ' + err.message;
-    } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = '평가 등록';
     }
   });
 
   form.append(starInput, nicknameInput, commentInput, passwordInput, submitBtn, errorMsg);
-  section.appendChild(form);
-
-  // Ratings list
-  const listEl = document.createElement('div');
-  listEl.className = 'rating-list';
-  listEl.innerHTML = '<p class="rating-loading">평가 불러오는 중...</p>';
-  section.appendChild(listEl);
-
-  loadRatingsList(itemId, listEl);
-
-  return section;
+  return form;
 }
 
 /** Load and render ratings list */
