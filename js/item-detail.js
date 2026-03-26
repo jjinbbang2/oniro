@@ -26,21 +26,29 @@ export function openItemDetail(item) {
   titleEl.className = `modal-title rarity-text-${rarityClass(item.표시희귀도)}`;
   bodyEl.innerHTML = '';
 
+  // 2-column layout wrapper
+  const layout = document.createElement('div');
+  layout.className = 'modal-layout';
+
+  // Left: item info
+  const infoCol = document.createElement('div');
+  infoCol.className = 'modal-col-info';
+
   // English name
   const enName = document.createElement('p');
   enName.className = 'detail-en-name';
   enName.textContent = item.에디터이름;
-  bodyEl.appendChild(enName);
+  infoCol.appendChild(enName);
 
   // Basic Info
-  bodyEl.appendChild(buildBasicInfo(item));
+  infoCol.appendChild(buildBasicInfo(item));
 
   // Weapon stats
   if (item.타입 === '무기' || item._category === '무기') {
     const ws = getWeaponStats(item.아이템ID);
     if (ws) {
-      bodyEl.appendChild(buildWeaponStats(ws));
-      bodyEl.appendChild(buildDisclaimer());
+      infoCol.appendChild(buildWeaponStats(ws));
+      infoCol.appendChild(buildDisclaimer());
     }
   }
 
@@ -48,26 +56,33 @@ export function openItemDetail(item) {
   if (['갑옷(상의)', '투구', '장갑', '신발', '벨트'].includes(item.타입)) {
     const as = getArmorStats(item.아이템ID);
     if (as) {
-      bodyEl.appendChild(buildArmorStats(as));
-      bodyEl.appendChild(buildDisclaimer());
+      infoCol.appendChild(buildArmorStats(as));
+      infoCol.appendChild(buildDisclaimer());
     }
   }
 
   // Options
   const visibleOptions = item.옵션?.filter(o => o.ID !== 0);
   if (visibleOptions?.length) {
-    bodyEl.appendChild(buildOptionsSection(visibleOptions));
+    infoCol.appendChild(buildOptionsSection(visibleOptions));
   }
 
   // Skills
   if (item.스킬?.length) {
-    bodyEl.appendChild(buildSkillsSection(item.스킬));
+    infoCol.appendChild(buildSkillsSection(item.스킬));
   }
 
-  // Rating section
+  layout.appendChild(infoCol);
+
+  // Right: rating section
   if (isSupabaseReady()) {
-    bodyEl.appendChild(buildRatingSection(item.아이템ID));
+    const ratingCol = document.createElement('div');
+    ratingCol.className = 'modal-col-rating';
+    ratingCol.appendChild(buildRatingSection(item.아이템ID));
+    layout.appendChild(ratingCol);
   }
+
+  bodyEl.appendChild(layout);
 
   overlay.hidden = false;
   document.body.style.overflow = 'hidden';
