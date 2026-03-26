@@ -1,5 +1,5 @@
-import { rarityClass, optionDisplayName, formatOptionValue, OPTION_NAMES } from './utils.js?v=1.4.13';
-import { getRatingSummary } from './supabase.js?v=1.4.13';
+import { rarityClass, optionDisplayName, formatOptionValue, OPTION_NAMES } from './utils.js?v=1.4.14';
+import { getRatingSummary } from './supabase.js?v=1.4.14';
 
 const tbody = document.getElementById('itemTableBody');
 const paginationEl = document.getElementById('pagination');
