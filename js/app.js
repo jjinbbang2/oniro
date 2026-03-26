@@ -1,5 +1,5 @@
-import { loadData, getDB } from './data.js?v=1.4.6';
-import { filterItems, paginate } from './search.js?v=1.4.6';
+import { loadData, getDB } from './data.js?v=1.4.7';
+import { filterItems, paginate } from './search.js?v=1.4.7';
 import {
   showLoading,
   renderTable,
@@ -9,10 +9,10 @@ import {
   renderOptionTags,
   renderSkillTags,
   renderActiveFilters,
-} from './render.js?v=1.4.6';
-import { initModal, openItemDetail, setOnRatingSubmitted } from './item-detail.js?v=1.4.6';
-import { debounce, parseHash, writeHash } from './utils.js?v=1.4.6';
-import { initSupabase, fetchAllRatingSummaries } from './supabase.js?v=1.4.6';
+} from './render.js?v=1.4.7';
+import { initModal, openItemDetail, setOnRatingSubmitted } from './item-detail.js?v=1.4.7';
+import { debounce, parseHash, writeHash } from './utils.js?v=1.4.7';
+import { initSupabase, fetchAllRatingSummaries } from './supabase.js?v=1.4.7';
 
 /** Application state */
 const state = {

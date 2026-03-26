@@ -1,4 +1,4 @@
-import { categoryOf, OPTION_NAMES } from './utils.js?v=1.4.6';
+import { categoryOf, OPTION_NAMES } from './utils.js?v=1.4.7';
 
 /** Loaded database */
 let db = null;
