@@ -197,6 +197,89 @@
   background: rgba(240, 192, 64, 0.1);
 }
 
+.option-type-rand-var {
+  color: #e0a050;
+  background: rgba(224, 160, 80, 0.1);
+}
+
+.option-type-rand-grant {
+  color: #e06060;
+  background: rgba(224, 96, 96, 0.1);
+}
+
+/* Option type info icon + tooltip */
+.option-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.option-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: help;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.option-info-icon:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* PC: hover tooltip */
+.option-info-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  white-space: normal;
+  width: max-content;
+  max-width: 220px;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.option-info-icon:hover::after {
+  opacity: 1;
+}
+
+/* Mobile: click popup */
+.option-tooltip-popup {
+  position: fixed;
+  z-index: 2000;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 280px;
+}
+
+@media (max-width: 768px) {
+  .option-info-icon::after {
+    display: none;
+  }
+}
+
 /* ====== Weapon Stats ====== */
 .weapon-stats {
   display: grid;

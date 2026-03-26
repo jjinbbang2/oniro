@@ -1,13 +1,43 @@
-import { getWeaponStats, getArmorStats } from './data.js?v=1.4.14';
-import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.14';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.14';
-import { renderStars } from './render.js?v=1.4.14';
+import { getWeaponStats, getArmorStats } from './data.js?v=1.4.15';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.15';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.15';
+import { renderStars } from './render.js?v=1.4.15';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
 const titleEl = document.getElementById('modalTitle');
 const bodyEl = document.getElementById('modalBody');
 const closeBtn = document.getElementById('modalClose');
+
+/** Option type descriptions */
+const OPTION_TYPE_DESC = {
+  '고정': '인게임과 정확히 일치하는 확정값',
+  '변동': '데이터에 최소/최대 범위가 있고, 드랍 시 그 안에서 롤링',
+  '랜덤변동': 'base값은 있지만 게임 런타임에서 추가 변동됨 (예: 피해감소 5%→6.7%)',
+  '랜덤부여': 'base값 0, 게임이 드랍 시 값을 부여 (예: 공속 0→22%)',
+};
+
+/** Show tooltip (PC: hover handled by CSS, mobile: click popup) */
+function showOptionTooltip(el, text) {
+  // Remove existing tooltip
+  const existing = document.querySelector('.option-tooltip-popup');
+  if (existing) existing.remove();
+
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return; // PC uses CSS hover
+
+  const popup = document.createElement('div');
+  popup.className = 'option-tooltip-popup';
+  popup.textContent = text;
+  document.body.appendChild(popup);
+
+  const rect = el.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + 8}px`;
+  popup.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - popup.offsetWidth - 8))}px`;
+
+  const dismiss = () => { popup.remove(); document.removeEventListener('click', dismiss); };
+  setTimeout(() => document.addEventListener('click', dismiss), 10);
+}
 
 /** Initialize modal event listeners */
 export function initModal() {
@@ -239,10 +269,25 @@ function buildOptionsSection(options) {
     }
 
     const tdType = document.createElement('td');
+    tdType.className = 'option-type-cell';
     const typeBadge = document.createElement('span');
-    typeBadge.className = `option-type-badge ${opt.유형 === '변동' ? 'option-type-variable' : 'option-type-fixed'}`;
+    const typeClass = { '고정': 'option-type-fixed', '변동': 'option-type-variable', '랜덤변동': 'option-type-rand-var', '랜덤부여': 'option-type-rand-grant' }[opt.유형] || 'option-type-fixed';
+    typeBadge.className = `option-type-badge ${typeClass}`;
     typeBadge.textContent = opt.유형;
     tdType.appendChild(typeBadge);
+
+    const tooltip = OPTION_TYPE_DESC[opt.유형];
+    if (tooltip) {
+      const info = document.createElement('span');
+      info.className = 'option-info-icon';
+      info.innerHTML = '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="7"/><line x1="8" y1="7" x2="8" y2="11"/><circle cx="8" cy="5" r="0.5" fill="currentColor"/></svg>';
+      info.dataset.tooltip = tooltip;
+      info.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showOptionTooltip(info, tooltip);
+      });
+      tdType.appendChild(info);
+    }
 
     tr.append(tdName, tdValue, tdType);
     tbody.appendChild(tr);
