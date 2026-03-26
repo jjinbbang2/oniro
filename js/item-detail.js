@@ -1,5 +1,5 @@
 import { getWeaponStats, getArmorStats } from './data.js';
-import { rarityClass, optionDisplayName, formatOptionValue } from './utils.js';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js';
 import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js';
 import { renderStars } from './render.js';
 
@@ -402,8 +402,10 @@ function buildRatingForm(itemId, summaryEl, listEl) {
       await loadRatingsList(itemId, listEl);
 
       if (_onRatingSubmitted) _onRatingSubmitted();
+      showToast('평가가 등록되었습니다');
     } catch (err) {
       errorMsg.textContent = '등록 실패: ' + err.message;
+      showToast('등록 실패: ' + err.message, 'error');
       submitBtn.disabled = false;
       submitBtn.textContent = '평가 등록';
     }
@@ -524,10 +526,12 @@ function showEditForm(r, itemId, card, listContainer) {
       await updateRating(r.id, newRating, commentInput.value.trim(), pwInput.value);
       await loadRatingsList(itemId, listContainer);
       if (_onRatingSubmitted) _onRatingSubmitted();
+      showToast('평가가 수정되었습니다');
     } catch (err) {
       errMsg.textContent = err.message;
       saveBtn.disabled = false;
       saveBtn.textContent = '수정 완료';
+      showToast('수정 실패: ' + err.message, 'error');
     }
   });
 
@@ -572,10 +576,12 @@ function showDeleteConfirm(r, itemId, card, listContainer) {
       await deleteRating(r.id, pwInput.value);
       await loadRatingsList(itemId, listContainer);
       if (_onRatingSubmitted) _onRatingSubmitted();
+      showToast('평가가 삭제되었습니다');
     } catch (err) {
       errMsg.textContent = err.message;
       delBtn.disabled = false;
       delBtn.textContent = '삭제 확인';
+      showToast('삭제 실패: ' + err.message, 'error');
     }
   });
 

@@ -85,6 +85,30 @@ export function formatOptionValue(opt) {
   return Number.isInteger(val) ? String(val) : val.toFixed(2).replace(/\.?0+$/, '');
 }
 
+/** Show toast notification */
+export function showToast(message, type = 'success') {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  // trigger animation
+  requestAnimationFrame(() => toast.classList.add('toast-show'));
+
+  setTimeout(() => {
+    toast.classList.remove('toast-show');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 2500);
+}
+
 /** Parse URL hash into state object */
 export function parseHash() {
   const hash = location.hash.slice(1);
