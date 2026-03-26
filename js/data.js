@@ -25,7 +25,7 @@ export async function loadData() {
   }
 
   // Filter out items without a Korean name and add category field
-  const isValidName = (name) => name && name.trim() !== '' && name.trim() !== '-';
+  const isValidName = (name) => name && name.trim() !== '' && name.trim() !== '-' && name.trim() !== 'N';
   const validItems = items.filter(item =>
     isValidName(item.한국어이름) || isValidName(item.에디터이름)
   );
