@@ -322,7 +322,7 @@ function buildRatingSection(itemId) {
     }
   })();
 
-  loadRatingsList(itemId, listEl);
+  loadRatingsList(itemId, listEl, summaryEl);
 
   return section;
 }
@@ -415,8 +415,19 @@ function buildRatingForm(itemId, summaryEl, listEl) {
   return form;
 }
 
+/** Refresh summary element with latest cache data */
+function refreshSummaryEl(itemId, summaryEl) {
+  if (!summaryEl) return;
+  const s = getRatingSummary(itemId);
+  if (s.count > 0) {
+    summaryEl.innerHTML = `<span class="rating-stars-lg">${renderStars(s.avg)}</span> <span class="rating-avg-lg">${s.avg}</span> <span class="rating-count-lg">(${s.count}명 평가)</span>`;
+  } else {
+    summaryEl.innerHTML = '<span class="rating-empty-msg">아직 평가가 없습니다</span>';
+  }
+}
+
 /** Load and render ratings list */
-async function loadRatingsList(itemId, container) {
+async function loadRatingsList(itemId, container, summaryEl) {
   const ratings = await fetchItemRatings(itemId);
   container.innerHTML = '';
 
@@ -450,13 +461,13 @@ async function loadRatingsList(itemId, container) {
       editBtn.className = 'rating-action-icon';
       editBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
       editBtn.title = '수정';
-      editBtn.addEventListener('click', () => showEditForm(r, itemId, card, container));
+      editBtn.addEventListener('click', () => showEditForm(r, itemId, card, container, summaryEl));
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'rating-action-icon rating-action-delete';
       deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
       deleteBtn.title = '삭제';
-      deleteBtn.addEventListener('click', () => showDeleteConfirm(r, itemId, card, container));
+      deleteBtn.addEventListener('click', () => showDeleteConfirm(r, itemId, card, container, summaryEl));
 
       header.append(editBtn, deleteBtn);
     }
@@ -466,7 +477,7 @@ async function loadRatingsList(itemId, container) {
 }
 
 /** Show inline edit form */
-function showEditForm(r, itemId, card, listContainer) {
+function showEditForm(r, itemId, card, listContainer, summaryEl) {
   // Replace card content with edit form
   const existing = card.querySelector('.rating-edit-form');
   if (existing) { existing.remove(); return; }
@@ -524,7 +535,8 @@ function showEditForm(r, itemId, card, listContainer) {
     saveBtn.textContent = '수정 중...';
     try {
       await updateRating(r.id, newRating, commentInput.value.trim(), pwInput.value);
-      await loadRatingsList(itemId, listContainer);
+      refreshSummaryEl(itemId, summaryEl);
+      await loadRatingsList(itemId, listContainer, summaryEl);
       if (_onRatingSubmitted) _onRatingSubmitted();
       showToast('평가가 수정되었습니다');
     } catch (err) {
@@ -541,7 +553,7 @@ function showEditForm(r, itemId, card, listContainer) {
 }
 
 /** Show delete confirmation */
-function showDeleteConfirm(r, itemId, card, listContainer) {
+function showDeleteConfirm(r, itemId, card, listContainer, summaryEl) {
   const existing = card.querySelector('.rating-delete-confirm');
   if (existing) { existing.remove(); return; }
 
@@ -574,7 +586,8 @@ function showDeleteConfirm(r, itemId, card, listContainer) {
     delBtn.textContent = '삭제 중...';
     try {
       await deleteRating(r.id, pwInput.value);
-      await loadRatingsList(itemId, listContainer);
+      refreshSummaryEl(itemId, summaryEl);
+      await loadRatingsList(itemId, listContainer, summaryEl);
       if (_onRatingSubmitted) _onRatingSubmitted();
       showToast('평가가 삭제되었습니다');
     } catch (err) {
