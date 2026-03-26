@@ -1,7 +1,7 @@
-import { getWeaponStats, getArmorStats } from './data.js?v=1.4.16';
-import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.16';
-import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.16';
-import { renderStars } from './render.js?v=1.4.16';
+import { getWeaponStats, getArmorStats } from './data.js?v=1.4.17';
+import { rarityClass, optionDisplayName, formatOptionValue, showToast } from './utils.js?v=1.4.17';
+import { isSupabaseReady, getRatingSummary, fetchItemRatings, submitRating, updateRating, deleteRating, hasAlreadyRated } from './supabase.js?v=1.4.17';
+import { renderStars } from './render.js?v=1.4.17';
 
 const overlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('itemModal');
@@ -12,9 +12,9 @@ const closeBtn = document.getElementById('modalClose');
 /** Option type descriptions */
 const OPTION_TYPE_DESC = {
   '고정': '인게임과 정확히 일치하는 확정값',
-  '변동': '데이터에 최소/최대 범위가 있고, 드랍 시 그 안에서 롤링',
-  '랜덤변동': 'base값은 있지만 게임 런타임에서 추가 변동됨 (예: 피해감소 5%→6.7%)',
-  '랜덤부여': 'base값 0, 게임이 드랍 시 값을 부여 (예: 공속 0→22%)',
+  '변동': '데이터에 최소/최대 범위가 있고\n드랍 시 그 안에서 롤링',
+  '랜덤변동': 'base값은 있지만 게임 런타임에서 추가 변동됨\n예: 피해감소 5%→6.7%',
+  '랜덤부여': 'base값 0\n게임이 드랍 시 값을 부여\n예: 공속 0→22%',
 };
 
 /** Show/hide fixed tooltip popup */

@@ -245,6 +245,7 @@
   box-shadow: var(--shadow-lg);
   max-width: 250px;
   pointer-events: none;
+  white-space: pre-line;
 }
 
 /* ====== Weapon Stats ====== */
