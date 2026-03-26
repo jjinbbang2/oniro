@@ -25,7 +25,10 @@ export async function loadData() {
   }
 
   // Filter out items without a Korean name and add category field
-  const validItems = items.filter(item => item.한국어이름 && item.한국어이름.trim() !== '');
+  const validItems = items.filter(item =>
+    (item.한국어이름 && item.한국어이름.trim() !== '') ||
+    (item.에디터이름 && item.에디터이름.trim() !== '')
+  );
   for (const item of validItems) {
     item._category = categoryOf(item.타입);
   }
