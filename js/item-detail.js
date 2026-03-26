@@ -437,23 +437,21 @@ async function loadRatingsList(itemId, container) {
       card.appendChild(commentEl);
     }
 
-    // 수정/삭제 버튼 (비밀번호가 설정된 평가만)
+    // 수정/삭제 아이콘 (비밀번호가 설정된 평가만, 날짜 옆에 배치)
     if (r.password_hash) {
-      const actions = document.createElement('div');
-      actions.className = 'rating-card-actions';
-
       const editBtn = document.createElement('button');
-      editBtn.className = 'rating-action-btn';
-      editBtn.textContent = '수정';
+      editBtn.className = 'rating-action-icon';
+      editBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      editBtn.title = '수정';
       editBtn.addEventListener('click', () => showEditForm(r, itemId, card, container));
 
       const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'rating-action-btn rating-action-delete';
-      deleteBtn.textContent = '삭제';
+      deleteBtn.className = 'rating-action-icon rating-action-delete';
+      deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+      deleteBtn.title = '삭제';
       deleteBtn.addEventListener('click', () => showDeleteConfirm(r, itemId, card, container));
 
-      actions.append(editBtn, deleteBtn);
-      card.appendChild(actions);
+      header.append(editBtn, deleteBtn);
     }
 
     container.appendChild(card);

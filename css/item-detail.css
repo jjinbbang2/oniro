@@ -429,31 +429,38 @@
   line-height: 1.4;
 }
 
-.rating-card-actions {
+.rating-action-icon {
   display: flex;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.rating-action-btn {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  padding: 2px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
   background: none;
+  color: var(--text-muted);
   cursor: pointer;
+  border-radius: var(--radius-sm);
   transition: all 0.15s;
+  opacity: 0.4;
 }
 
-.rating-action-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--text-muted);
+.rating-card:hover .rating-action-icon {
+  opacity: 1;
 }
 
-.rating-action-delete:hover {
+.rating-action-icon:hover {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.rating-action-icon.rating-action-delete:hover {
   color: var(--danger);
-  border-color: var(--danger);
+  background: rgba(224, 80, 80, 0.1);
+}
+
+.rating-action-icon svg {
+  display: block;
 }
 
 .rating-edit-form,
