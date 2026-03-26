@@ -32,13 +32,13 @@ export function filterItems(items, state) {
     result = result.filter(item => item.레벨 <= state.lvMax);
   }
 
-  // Text search
+  // Text search (spaces ignored)
   if (state.query) {
-    const q = state.query.toLowerCase();
+    const q = state.query.replace(/\s/g, '').toLowerCase();
     result = result.filter(item =>
-      (item.한국어이름 || '').toLowerCase().includes(q) ||
-      (item.에디터이름 || '').toLowerCase().includes(q) ||
-      (item.내부이름 || '').toLowerCase().includes(q)
+      (item.한국어이름 || '').replace(/\s/g, '').toLowerCase().includes(q) ||
+      (item.에디터이름 || '').replace(/\s/g, '').toLowerCase().includes(q) ||
+      (item.내부이름 || '').replace(/\s/g, '').toLowerCase().includes(q)
     );
   }
 
