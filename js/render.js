@@ -125,18 +125,11 @@ export function renderTable(pageItems, totalItems) {
     if (item.스킬?.length) {
       const pills = document.createElement('div');
       pills.className = 'skill-pills';
-      const visibleSkills = item.스킬.slice(0, 2);
-      for (const skill of visibleSkills) {
+      for (const skill of item.스킬) {
         const pill = document.createElement('span');
         pill.className = 'skill-pill';
         pill.textContent = skill['이름(한국어)'] || skill.이름;
         pills.appendChild(pill);
-      }
-      if (item.스킬.length > 2) {
-        const more = document.createElement('span');
-        more.className = 'skill-pill';
-        more.textContent = `+${item.스킬.length - 2}`;
-        pills.appendChild(more);
       }
       tdSkills.appendChild(pills);
     }
