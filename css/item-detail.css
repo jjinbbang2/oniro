@@ -584,7 +584,7 @@
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 0;
-    align-items: flex-end;
+    align-items: flex-start;
   }
 
   .modal {

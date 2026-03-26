@@ -1,5 +1,5 @@
-import { rarityWeight } from './utils.js?v=1.4.17';
-import { getRatingSummary } from './supabase.js?v=1.4.17';
+import { rarityWeight } from './utils.js?v=1.4.18';
+import { getRatingSummary } from './supabase.js?v=1.4.18';
 
 /**
  * Filter and sort items based on current state.
